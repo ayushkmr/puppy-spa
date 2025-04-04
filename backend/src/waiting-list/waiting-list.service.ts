@@ -86,10 +86,17 @@ export class WaitingListService {
       waitingList = await this.create({ date: today.toISOString() });
       
       // Fetch again with relations
-      waitingList = await this.waitingListRepository.findOne({
+      const refreshedList = await this.waitingListRepository.findOne({
         where: { id: waitingList.id },
         relations: ['entries'],
       });
+      
+      // This should never happen, but just to be safe
+      if (!refreshedList) {
+        throw new NotFoundException(`Could not retrieve created waiting list for today`);
+      }
+      
+      return refreshedList;
     }
     
     return waitingList;
